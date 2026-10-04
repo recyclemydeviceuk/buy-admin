@@ -1,0 +1,44 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
+  body { @apply bg-cream-2 text-ink font-sans text-[14px] leading-[1.6]; }
+  h1, h2, h3, h4 { @apply font-display font-bold tracking-tightest text-ink; }
+  ::selection { @apply bg-brand-100 text-brand-700; }
+  input[type='number']::-webkit-inner-spin-button, input[type='number']::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+  input[type='number'] { -moz-appearance: textfield; }
+}
+
+@layer components {
+  .focus-ring { @apply focus:outline-none focus-visible:ring-2 focus-visible:ring-ink focus-visible:ring-offset-2 focus-visible:ring-offset-cream-2; }
+  .product-img { @apply object-contain mix-blend-multiply; }
+  .eyebrow { @apply text-[11px] font-bold uppercase tracking-[0.18em] text-ink-3; }
+  .serif-accent { @apply font-serif italic font-normal tracking-normal; }
+  .card { @apply rounded-3xl border border-line bg-white; }
+  .input {
+    @apply h-11 w-full rounded-2xl border border-line bg-white px-3.5 text-[14px] text-ink placeholder:text-ink-4 transition-all focus:border-ink focus:outline-none focus:ring-4 focus:ring-ink/5 disabled:bg-cream disabled:text-ink-3 aria-[invalid=true]:border-brand-600;
+  }
+  .input-sm { @apply h-9 rounded-xl px-3 text-[13px]; }
+  .th { @apply px-4 py-3 text-left text-[11px] font-bold uppercase tracking-[0.14em] text-ink-3 whitespace-nowrap; }
+  .td { @apply px-4 py-3 align-middle; }
+  .nav-item { @apply flex items-center gap-3 rounded-2xl px-3.5 py-2.5 text-[13.5px] font-semibold text-ink-2 transition-colors hover:bg-cream hover:text-ink; }
+  .nav-item-active { @apply bg-ink text-white hover:bg-ink hover:text-white; }
+  .kbd { @apply inline-flex h-5 min-w-[20px] items-center justify-center rounded-md border border-line bg-cream px-1.5 font-mono text-[10px] font-medium text-ink-3; }
+}
+
+@layer utilities {
+  .no-scrollbar::-webkit-scrollbar { display: none; }
+  .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+  .tabular { font-variant-numeric: tabular-nums; }
+}
+
+@media print {
+  aside, header, .no-print { display: none !important; }
+  body { background: #fff; }
+  main { padding: 0 !important; }
+  .card { border: none !important; box-shadow: none !important; }
+  .print-only { display: block !important; }
+}
+.print-only { display: none; }
