@@ -79,7 +79,7 @@ export interface PriceRule {
 
 // ─── Orders ───────────────────────────────────────────────────────────────────
 export type OrderStatus = 'confirmed' | 'packing' | 'dispatched' | 'delivered' | 'cancelled' | 'returned';
-export type PaymentStatus = 'paid' | 'partially-refunded' | 'refunded';
+export type PaymentStatus = 'pending' | 'paid' | 'partially-refunded' | 'refunded' | 'failed';
 
 export interface Tracking {
   carrier: string;

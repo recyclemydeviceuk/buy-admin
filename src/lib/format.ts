@@ -71,7 +71,7 @@ export const NEXT_STATUSES: Record<OrderStatus, OrderStatus[]> = {
   returned: [],
 };
 
-export const PAYMENT_STATUS_LABEL: Record<PaymentStatus, string> = { paid: 'Paid', 'partially-refunded': 'Part refunded', refunded: 'Refunded' };
+export const PAYMENT_STATUS_LABEL: Record<PaymentStatus, string> = { pending: 'Pending in PayPal', paid: 'Paid', 'partially-refunded': 'Part refunded', refunded: 'Refunded', failed: 'Payment failed' };
 export const REVIEW_STATUS_LABEL: Record<ReviewStatus, string> = { pending: 'Pending', approved: 'Approved', rejected: 'Rejected' };
 export const ENQUIRY_STATUS_LABEL: Record<EnquiryStatus, string> = { open: 'Open', replied: 'Replied', closed: 'Closed' };
 export const PRODUCT_STATUS_LABEL: Record<ProductStatus, string> = { active: 'Active', draft: 'Draft', archived: 'Archived' };

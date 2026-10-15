@@ -27,7 +27,7 @@ export function Badge({ children, tone = 'neutral', className, dot }: { children
 }
 
 export const ORDER_TONE: Record<OrderStatus, Tone> = { confirmed: 'lemon', packing: 'lilac', dispatched: 'sky', delivered: 'mint', cancelled: 'peach', returned: 'peach' };
-export const PAYMENT_TONE: Record<PaymentStatus, Tone> = { paid: 'mint', 'partially-refunded': 'lemon', refunded: 'peach' };
+export const PAYMENT_TONE: Record<PaymentStatus, Tone> = { pending: 'sky', paid: 'mint', 'partially-refunded': 'lemon', refunded: 'peach', failed: 'brand' };
 export const REVIEW_TONE: Record<ReviewStatus, Tone> = { pending: 'lemon', approved: 'mint', rejected: 'peach' };
 export const ENQUIRY_TONE: Record<EnquiryStatus, Tone> = { open: 'lemon', replied: 'sky', closed: 'neutral' };
 export const PRODUCT_TONE: Record<ProductStatus, Tone> = { active: 'mint', draft: 'lemon', archived: 'neutral' };

@@ -161,7 +161,7 @@ export default function Orders() {
       <Card padded={false}>
         <div className="flex flex-wrap items-center gap-2 border-b border-line p-3">
           <SearchInput value={search} onChange={setSearch} placeholder="Order no., customer, email, postcode, tracking…" className="w-full md:w-72" />
-          <Dropdown label="Payment" value={payment} onChange={(v) => set({ payment: v })} options={[{ value: 'paid', label: 'Paid' }, { value: 'partially-refunded', label: 'Part refunded' }, { value: 'refunded', label: 'Refunded' }]} />
+          <Dropdown label="Payment" value={payment} onChange={(v) => set({ payment: v })} options={[{ value: 'pending', label: 'Pending in PayPal' }, { value: 'paid', label: 'Paid' }, { value: 'failed', label: 'Payment failed' }, { value: 'partially-refunded', label: 'Part refunded' }, { value: 'refunded', label: 'Refunded' }]} />
           <Dropdown label="Delivery" value={delivery} onChange={(v) => set({ delivery: v })} options={[{ value: 'next-day', label: 'Next-day tracked', icon: <Truck size={14} /> }, { value: 'standard', label: 'Standard tracked', icon: <Package size={14} /> }]} />
           <Dropdown label="Date" value={datePreset} placeholder="Any time" onChange={(v) => { const p = DATE_PRESETS.find((x) => x.value === v); if (p) { const [a, b] = p.range(); set({ from: a, to: b }); } else if (!v) set({ from: '', to: '' }); }} options={[...DATE_PRESETS.map((p) => ({ value: p.value, label: p.label })), ...(datePreset === 'custom' ? [{ value: 'custom', label: `${from || '…'} → ${to || '…'}` }] : [])]} />
           <FilterButton label="Custom range" active={datePreset === 'custom'} onClear={() => set({ from: '', to: '' })}>
