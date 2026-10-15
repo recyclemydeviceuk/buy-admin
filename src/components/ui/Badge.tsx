@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react';
 import { cn } from '../../lib/cn';
-import type { EnquiryStatus, OrderStatus, PaymentStatus, ProductStatus, ReviewStatus, Role, RoleColor } from '../../types';
-import { ENQUIRY_STATUS_LABEL, ORDER_STATUS_LABEL, PAYMENT_STATUS_LABEL, PRODUCT_STATUS_LABEL, REVIEW_STATUS_LABEL } from '../../lib/format';
+import type { Condition, EnquiryStatus, OrderStatus, PaymentStatus, ProductStatus, ReviewStatus, Role, RoleColor } from '../../types';
+import { CONDITION_LABEL, ENQUIRY_STATUS_LABEL, ORDER_STATUS_LABEL, PAYMENT_STATUS_LABEL, PRODUCT_STATUS_LABEL, REVIEW_STATUS_LABEL } from '../../lib/format';
 
 export type Tone = 'neutral' | 'mint' | 'sky' | 'lilac' | 'peach' | 'lemon' | 'ink' | 'brand' | 'outline';
 
@@ -44,10 +44,8 @@ export function StockBadge({ stock, low }: { stock: number; low: number }) {
   return <Badge tone="mint">{stock} in stock</Badge>;
 }
 
-export function ConditionBadge({ condition }: { condition: 'excellent' | 'good' | 'fair' }) {
-  const map = { excellent: ['mint', 'Excellent'], good: ['sky', 'Good'], fair: ['lemon', 'Fair'] } as const;
-  return <Badge tone={map[condition][0]}>{map[condition][1]}</Badge>;
-}
+export const CONDITION_TONE: Record<Condition, Tone> = { premium: 'lilac', excellent: 'mint', good: 'sky', fair: 'lemon' };
+export const ConditionBadge = ({ condition }: { condition: Condition }) => <Badge tone={CONDITION_TONE[condition]}>{CONDITION_LABEL[condition]}</Badge>;
 
 export const ROLE_TONE: Record<RoleColor, Tone> = { ink: 'ink', brand: 'brand', sky: 'sky', mint: 'mint', lilac: 'lilac', lemon: 'lemon', peach: 'peach' };
 export function RoleBadge({ role, className }: { role: Pick<Role, 'name' | 'color'>; className?: string }) {

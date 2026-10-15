@@ -1,4 +1,4 @@
-import type { Condition, OrderStatus, PaymentStatus, ReviewStatus, EnquiryStatus, ProductStatus } from '../types';
+import type { BasketLine, Condition, OrderStatus, PaymentStatus, ReviewStatus, EnquiryStatus, ProductStatus } from '../types';
 
 const gbp = new Intl.NumberFormat('en-GB', { style: 'currency', currency: 'GBP', maximumFractionDigits: 0 });
 const gbpExact = new Intl.NumberFormat('en-GB', { style: 'currency', currency: 'GBP', minimumFractionDigits: 2 });
@@ -44,9 +44,12 @@ export function timeAgo(iso: string): string {
   return formatDate(iso, { day: 'numeric', month: 'short' });
 }
 
-export const CONDITION_LABEL: Record<Condition, string> = { excellent: 'Excellent', good: 'Good', fair: 'Fair' };
-export const CONDITION_ORDER: Condition[] = ['excellent', 'good', 'fair'];
+export const CONDITION_LABEL: Record<Condition, string> = { premium: 'Premium', excellent: 'Excellent', good: 'Good', fair: 'Fair' };
+/** Best first. */
+export const CONDITION_ORDER: Condition[] = ['premium', 'excellent', 'good', 'fair'];
 export const conditionLabel = (c: Condition) => CONDITION_LABEL[c] ?? c;
+/** "256GB · Deep Blue · Excellent": how an order line or variant is described. */
+export const lineSpec = (l: Pick<BasketLine, 'storage' | 'colour' | 'condition'>) => [l.storage, l.colour, conditionLabel(l.condition)].filter(Boolean).join(' · ');
 
 export const ORDER_STATUS_LABEL: Record<OrderStatus, string> = {
   confirmed: 'Confirmed',

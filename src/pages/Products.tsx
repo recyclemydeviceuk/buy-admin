@@ -21,9 +21,9 @@ import { cn } from '../lib/cn';
 type Sort = 'name' | 'newest' | 'price-asc' | 'price-desc' | 'stock' | 'updated';
 
 function StockBar({ p, low }: { p: AdminProduct; low: number }) {
-  const by = { excellent: 0, good: 0, fair: 0 };
+  const by = { premium: 0, excellent: 0, good: 0, fair: 0 };
   p.variants.forEach((v) => (by[v.condition] += v.stock));
-  const total = by.excellent + by.good + by.fair;
+  const total = by.premium + by.excellent + by.good + by.fair;
   const out = p.variants.filter((v) => v.stock === 0).length;
   const lowc = p.variants.filter((v) => v.stock > 0 && v.stock <= low).length;
   return (
@@ -32,16 +32,17 @@ function StockBar({ p, low }: { p: AdminProduct; low: number }) {
         <span className={cn('font-semibold tabular', total === 0 && 'text-brand-700')}>{number(total)} units</span>
         <span className="text-[11px] text-ink-3">{out > 0 && <span className="text-brand-700">{out} out</span>}{out > 0 && lowc > 0 && ' · '}{lowc > 0 && <span className="text-warn">{lowc} low</span>}{!out && !lowc && 'healthy'}</span>
       </div>
-      <div className="mt-1 flex h-1.5 overflow-hidden rounded-full bg-cream-3" title={`Excellent ${by.excellent} · Good ${by.good} · Fair ${by.fair}`}>
+      <div className="mt-1 flex h-1.5 overflow-hidden rounded-full bg-cream-3" title={`Premium ${by.premium} · Excellent ${by.excellent} · Good ${by.good} · Fair ${by.fair}`}>
         {total > 0 && (
           <>
+            <span className="bg-violet" style={{ width: `${(by.premium / total) * 100}%` }} />
             <span className="bg-success" style={{ width: `${(by.excellent / total) * 100}%` }} />
             <span className="bg-info" style={{ width: `${(by.good / total) * 100}%` }} />
             <span className="bg-warn" style={{ width: `${(by.fair / total) * 100}%` }} />
           </>
         )}
       </div>
-      <p className="mt-0.5 text-[10.5px] text-ink-3 tabular">E {by.excellent} · G {by.good} · F {by.fair}</p>
+      <p className="mt-0.5 text-[10.5px] text-ink-3 tabular">P {by.premium} · E {by.excellent} · G {by.good} · F {by.fair}</p>
     </div>
   );
 }
@@ -93,7 +94,7 @@ export default function Products() {
         <ProductThumb src={imageUrl(p.image)} />
         <div className="min-w-0">
           <p className="flex items-center gap-1.5 truncate font-bold">{p.brand} {p.name}{p.featured && <Star size={12} className="shrink-0 fill-amber-400 text-amber-400" />}</p>
-          <p className="truncate text-[11px] text-ink-3">{p.series} · {p.releaseYear} · {p.storages.join(' / ')} · {p.networks.length} networks</p>
+          <p className="truncate text-[11px] text-ink-3">{p.series} · {p.releaseYear} · {p.storages.join(' / ')}{p.colours.length > 0 && ` · ${p.colours.length} ${p.colours.length === 1 ? 'colour' : 'colours'}`}</p>
         </div>
       </div>
     ) },
@@ -155,7 +156,7 @@ export default function Products() {
           </Pagination>
         )}
       </Card>
-      <p className="mt-3 text-[11.5px] text-ink-4">Stock bar: <span className="text-success">■</span> Excellent <span className="text-info">■</span> Good <span className="text-warn">■</span> Fair. Low stock is {low} units or fewer per variant; change it in Settings → Catalogue.</p>
+      <p className="mt-3 text-[11.5px] text-ink-4">Stock bar: <span className="text-violet">■</span> Premium <span className="text-success">■</span> Excellent <span className="text-info">■</span> Good <span className="text-warn">■</span> Fair. Low stock is {low} units or fewer per variant; change it in Settings → Catalogue.</p>
     </div>
   );
 }

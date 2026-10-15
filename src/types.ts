@@ -1,8 +1,8 @@
 // Admin-side shapes. Storefront shapes are vendored in ./types/storefront.ts (from buy-cmm frontend/src/types.ts) so the
 // two apps never drift; everything here is what the admin needs *on top of* what the storefront sees.
-import type { Condition, DeliveryMethod, Order, Product, Review } from './types/storefront';
+import type { Condition, DeliveryMethod, GradePhoto, Order, Product, Review } from './types/storefront';
 
-export type { Address, BasketLine, Brand, Condition, DeliveryMethod, Network, Order, Paged, Product, ProductSpecs, Review, Variant } from './types/storefront';
+export type { Address, BasketLine, Brand, Colour, Condition, DeliveryMethod, GradePhoto, Order, Paged, Product, ProductSpecs, Review, Variant } from './types/storefront';
 
 // ─── Products ─────────────────────────────────────────────────────────────────
 export type ProductStatus = 'active' | 'draft' | 'archived';
@@ -31,7 +31,7 @@ export interface ProductListQuery {
 
 export type ProductInput = Omit<AdminProduct, 'id' | 'createdAt' | 'updatedAt' | 'fromPrice' | 'rating' | 'reviewCount'> & { rating?: number; reviewCount?: number };
 
-/** A single cell of the storage × network × condition matrix, flattened for the inventory screen. */
+/** A single cell of the storage × colour × condition matrix, flattened for the inventory screen. */
 export interface VariantRow {
   productId: string;
   productName: string;
@@ -39,7 +39,7 @@ export interface VariantRow {
   slug: string;
   image: string;
   storage: string;
-  network: string;
+  colour: string;
   condition: Condition;
   price: number;
   stock: number;
@@ -49,7 +49,6 @@ export interface VariantRow {
 export interface VariantListQuery {
   search?: string;
   brand?: string;
-  network?: string;
   condition?: Condition;
   storage?: string;
   stock?: StockFilter;
@@ -61,7 +60,7 @@ export interface VariantListQuery {
 export interface VariantUpdate {
   productId: string;
   storage: string;
-  network: string;
+  colour: string;
   condition: Condition;
   price?: number;
   stock?: number;
@@ -74,7 +73,6 @@ export interface PriceRule {
   brand?: string;
   series?: string;
   condition?: Condition;
-  network?: string;
   /** Round to the nearest £ ending in this figure (9 → £149, £199). Omit for plain rounding. */
   roundTo?: number;
 }
@@ -229,12 +227,13 @@ export interface ConditionSetting {
   short: string;
   blurb: string;
   minBattery: number;
+  /** Example photos of a phone in this grade, shown in the storefront's grading guide and on product pages. */
+  images: GradePhoto[];
 }
 
 export interface Settings {
   store: { name: string; supportEmail: string; whatsapp: string; hours: string; siteUrl: string; warrantyMonths: number; returnsDays: number };
   delivery: DeliveryOption[];
-  networks: string[];
   storages: string[];
   conditions: ConditionSetting[];
   featuredSlugs: string[];
@@ -324,13 +323,13 @@ export interface DashboardStats {
   previousSeries: Array<{ date: string; revenue: number; orders: number }>;
   heatmap: number[][]; // [weekday 0=Mon][hour]
   topProducts: Array<{ productId: string; name: string; brand: string; image: string; units: number; revenue: number; stock: number }>;
-  restock: Array<{ productId: string; name: string; brand: string; image: string; storage: string; network: string; condition: Condition; stock: number; soldInRange: number; price: number }>;
+  restock: Array<{ productId: string; name: string; brand: string; image: string; storage: string; colour: string; condition: Condition; stock: number; soldInRange: number; price: number }>;
   recentOrders: AdminOrder[];
   topCustomers: Array<{ id: string; name: string; email: string; orders: number; spent: number }>;
   stockByCondition: Record<Condition, { units: number; value: number }>;
   salesByCondition: Array<{ key: Condition; units: number; revenue: number }>;
   salesByBrand: Array<{ key: string; units: number; revenue: number }>;
-  salesByNetwork: Array<{ key: string; units: number; revenue: number }>;
+  salesByColour: Array<{ key: string; units: number; revenue: number }>;
   salesByStorage: Array<{ key: string; units: number; revenue: number }>;
   salesBySeries: Array<{ key: string; units: number; revenue: number }>;
   cities: Array<{ key: string; orders: number; revenue: number }>;

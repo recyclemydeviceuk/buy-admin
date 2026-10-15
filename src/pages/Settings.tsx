@@ -4,7 +4,7 @@ import { api } from '../api';
 import { useAsync } from '../hooks/useAsync';
 import { useAuth } from '../store/auth';
 import { useToast } from '../store/toast';
-import type { Settings as SettingsT } from '../types';
+import type { GradePhoto, Settings as SettingsT } from '../types';
 import { Button, IconButton } from '../components/ui/Button';
 import { Card, CardHeader, PageHeader } from '../components/ui/Card';
 import { Field, Select, TextArea, Toggle } from '../components/ui/Field';
@@ -30,7 +30,8 @@ export default function Settings() {
     if (!s) return;
     setSaving(true);
     try {
-      await api.updateSettings(s);
+      // A photo row that was added but never given a URL is not saved.
+      await api.updateSettings({ ...s, conditions: s.conditions.map((c) => ({ ...c, images: (c.images ?? []).filter((i) => i.url) })) });
       toast.success('Settings saved');
       reload();
     } catch (e) {
@@ -87,15 +88,11 @@ export default function Settings() {
           {tab === 'catalogue' && (
             <div className="space-y-5">
               <Card>
-                <CardHeader title="Networks" subtitle="Order here is the order on the storefront. Unlocked should stay first." />
-                <ChipList items={s.networks} onChange={(networks) => patch({ networks })} placeholder="e.g. giffgaff" />
-              </Card>
-              <Card>
                 <CardHeader title="Storage sizes" subtitle="Options offered when building a product's variant matrix." />
                 <ChipList items={s.storages} onChange={(storages) => patch({ storages: [...storages].sort((a, b) => storageIndex(a) - storageIndex(b)) })} placeholder="e.g. 2TB" normalise={(v) => v.toUpperCase().replace(/\s/g, '')} validate={(v) => /^\d+(GB|TB)$/.test(v)} />
               </Card>
               <Card>
-                <CardHeader title="Condition grades" subtitle="Copy shown in the grading guide and on product pages. Keys are fixed: excellent, good, fair." />
+                <CardHeader title="Condition grades" subtitle="The four grades are fixed: Premium, Excellent, Good, Fair. Example photos appear in the storefront's grading guide and on product pages when a shopper picks a grade." />
                 <div className="space-y-4">
                   {s.conditions.map((c, i) => (
                     <div key={c.key} className="rounded-2xl border border-line p-4">
@@ -105,6 +102,7 @@ export default function Settings() {
                         <Field label="Minimum battery" suffix="%" type="number" min={50} max={100} value={c.minBattery} onChange={(e) => patch({ conditions: s.conditions.map((x, j) => (j === i ? { ...x, minBattery: Number(e.target.value) } : x)) })} />
                         <TextArea label="Blurb" className="sm:col-span-3" value={c.blurb} onChange={(e) => patch({ conditions: s.conditions.map((x, j) => (j === i ? { ...x, blurb: e.target.value } : x)) })} />
                       </div>
+                      <GradePhotos label={c.label} photos={c.images ?? []} onChange={(images) => patch({ conditions: s.conditions.map((x, j) => (j === i ? { ...x, images } : x)) })} />
                     </div>
                   ))}
                 </div>
@@ -146,6 +144,27 @@ export default function Settings() {
 
         {tab === 'system' && <SystemPanel />}
       </div>
+    </div>
+  );
+}
+
+/** Example photos of a phone in one grade. Each needs a hosted image URL; the caption says what it shows ("Body", "Screen"). */
+function GradePhotos({ label, photos, onChange }: { label: string; photos: GradePhoto[]; onChange: (next: GradePhoto[]) => void }) {
+  const set = (i: number, p: Partial<GradePhoto>) => onChange(photos.map((x, j) => (j === i ? { ...x, ...p } : x)));
+  return (
+    <div className="mt-4 border-t border-line-2 pt-4">
+      <p className="mb-2 text-[13px] font-semibold">Example photos <span className="font-normal text-ink-3">· what a {label} phone looks like</span></p>
+      <div className="space-y-2">
+        {photos.map((ph, i) => (
+          <div key={i} className="flex flex-wrap items-center gap-2">
+            <span className="h-11 w-14 shrink-0 overflow-hidden rounded-xl bg-cream">{ph.url && <img src={imageUrl(ph.url)} alt="" className="h-full w-full object-cover" />}</span>
+            <input value={ph.url} onChange={(e) => set(i, { url: e.target.value.trim() })} placeholder="Photo URL (https://…)" aria-label={`${label} example photo URL`} className="input input-sm min-w-0 flex-1" />
+            <input value={ph.caption} onChange={(e) => set(i, { caption: e.target.value })} placeholder="Caption, e.g. Body" aria-label={`${label} example photo caption`} maxLength={40} className="input input-sm w-36" />
+            <IconButton label="Remove photo" onClick={() => onChange(photos.filter((_, j) => j !== i))}><X size={14} /></IconButton>
+          </div>
+        ))}
+      </div>
+      {photos.length < 6 && <button type="button" onClick={() => onChange([...photos, { url: '', caption: '' }])} className="mt-2 inline-flex items-center gap-1 rounded-full border border-dashed border-line px-3 py-1.5 text-[13px] font-semibold text-ink-3 hover:border-ink hover:text-ink"><Plus size={13} /> Add photo</button>}
     </div>
   );
 }

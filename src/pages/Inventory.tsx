@@ -17,11 +17,11 @@ import { DensityToggle, Pagination, Table, type Column } from '../components/ui/
 import { ConditionBadge, StockBadge } from '../components/ui/Badge';
 import { EmptyState } from '../components/ui/EmptyState';
 import { Modal } from '../components/ui/Modal';
-import { CONDITION_LABEL, imageUrl, money, number, savingsPct } from '../lib/format';
+import { CONDITION_LABEL, CONDITION_ORDER, imageUrl, money, number, savingsPct } from '../lib/format';
 import { downloadCsv } from '../lib/csv';
 import { cn } from '../lib/cn';
 
-const rowKey = (r: VariantRow) => `${r.productId}|${r.storage}|${r.network}|${r.condition}`;
+const rowKey = (r: VariantRow) => `${r.productId}|${r.storage}|${r.colour}|${r.condition}`;
 
 export default function Inventory() {
   const toast = useToast();
@@ -31,13 +31,12 @@ export default function Inventory() {
   const q = useDebounce(search, 250);
   const stock = (get('stock') as StockFilter | '') || '';
   const brand = get('brand');
-  const network = get('network');
   const condition = get('condition') as Condition | '';
   const storage = get('storage');
   const sort = get('sort', 'product') as 'product' | 'stock-asc' | 'stock-desc' | 'price-asc' | 'price-desc';
   const page = getNum('page', 1);
   const pageSize = 50;
-  const query = useMemo(() => ({ search: q || undefined, stock: stock || undefined, brand: brand || undefined, network: network || undefined, condition: condition || undefined, storage: storage || undefined, sort, page, pageSize }), [q, stock, brand, network, condition, storage, sort, page]);
+  const query = useMemo(() => ({ search: q || undefined, stock: stock || undefined, brand: brand || undefined, condition: condition || undefined, storage: storage || undefined, sort, page, pageSize }), [q, stock, brand, condition, storage, sort, page]);
   const { data, loading, reload } = useAsync(() => api.listVariants(query), [query]);
   const { data: settings } = useAsync(() => api.getSettings(), []);
   if (q !== get('q')) set({ q }, true);
@@ -65,8 +64,8 @@ export default function Inventory() {
   async function saveEdits() {
     setSaving(true);
     const updates: VariantUpdate[] = Object.entries(edits).map(([k, v]) => {
-      const [productId, storage, network, condition] = k.split('|');
-      return { productId, storage, network, condition: condition as Condition, ...v };
+      const [productId, storage, colour, condition] = k.split('|');
+      return { productId, storage, colour, condition: condition as Condition, ...v };
     });
     try {
       const r = await api.updateVariants(updates);
@@ -103,7 +102,7 @@ export default function Inventory() {
 
   async function exportCsv() {
     const all = await api.listVariants({ ...query, page: 1, pageSize: 10000 });
-    downloadCsv(`buyupon-inventory-${new Date().toISOString().slice(0, 10)}.csv`, all.items.map((r) => ({ product: r.productName, slug: r.slug, storage: r.storage, network: r.network, condition: r.condition, price: r.price, rrp: r.rrp, stock: r.stock })));
+    downloadCsv(`buyupon-inventory-${new Date().toISOString().slice(0, 10)}.csv`, all.items.map((r) => ({ product: r.productName, slug: r.slug, storage: r.storage, colour: r.colour, condition: r.condition, price: r.price, rrp: r.rrp, stock: r.stock })));
     toast.success('CSV exported', `${all.items.length} variants`);
   }
 
@@ -114,7 +113,7 @@ export default function Inventory() {
         <span className="truncate font-semibold">{r.productName}</span>
       </Link>
     ) },
-    { key: 'variant', header: 'Variant', render: (r) => <span className="flex items-center gap-2 text-[13px]"><b>{r.storage}</b><span className="text-ink-3">·</span>{r.network}<span className="text-ink-3">·</span><ConditionBadge condition={r.condition} /></span> },
+    { key: 'variant', header: 'Variant', render: (r) => <span className="flex items-center gap-2 text-[13px]"><b>{r.storage}</b>{r.colour && <><span className="text-ink-3">·</span>{r.colour}</>}<span className="text-ink-3">·</span><ConditionBadge condition={r.condition} /></span> },
     { key: 'status', header: 'Status', render: (r) => <StockBadge stock={edits[rowKey(r)]?.stock ?? r.stock} low={low} /> },
     { key: 'price', header: 'Price', align: 'right', render: (r) => {
       const e = edits[rowKey(r)]?.price;
@@ -150,12 +149,11 @@ export default function Inventory() {
 
       <Card padded={false}>
         <div className="flex flex-wrap items-center gap-2 border-b border-line p-3.5">
-          <SearchInput value={search} onChange={setSearch} placeholder="Model, storage, network…" className="w-full md:w-72" />
+          <SearchInput value={search} onChange={setSearch} placeholder="Model, storage, colour…" className="w-full md:w-72" />
           <Dropdown label="Brand" value={brand} onChange={(v) => set({ brand: v })} options={[{ value: 'Apple', label: 'Apple' }, { value: 'Samsung', label: 'Samsung' }]} />
           <Dropdown label="Storage" value={storage} onChange={(v) => set({ storage: v })} options={(settings?.storages ?? []).map((s) => ({ value: s, label: s }))} />
-          <Dropdown label="Network" value={network} onChange={(v) => set({ network: v })} options={(settings?.networks ?? []).map((n) => ({ value: n, label: n }))} />
-          <Dropdown label="Grade" value={condition} onChange={(v) => set({ condition: v })} options={(['excellent', 'good', 'fair'] as Condition[]).map((c) => ({ value: c, label: CONDITION_LABEL[c] }))} />
-          {(brand || storage || network || condition || search) && <Button size="xs" variant="ghost" onClick={() => { setSearch(''); set({ q: '', brand: '', storage: '', network: '', condition: '' }); }}>Clear</Button>}
+          <Dropdown label="Grade" value={condition} onChange={(v) => set({ condition: v })} options={CONDITION_ORDER.map((c) => ({ value: c, label: CONDITION_LABEL[c] }))} />
+          {(brand || storage || condition || search) && <Button size="xs" variant="ghost" onClick={() => { setSearch(''); set({ q: '', brand: '', storage: '', condition: '' }); }}>Clear</Button>}
           <div className="ml-auto flex items-center gap-2">
             <Dropdown label="Sort" clearable={false} align="right" value={sort} onChange={(v) => v && set({ sort: v })} options={[{ value: 'product', label: 'By product' }, { value: 'stock-asc', label: 'Stock low → high' }, { value: 'stock-desc', label: 'Stock high → low' }, { value: 'price-asc', label: 'Price low → high' }, { value: 'price-desc', label: 'Price high → low' }]} />
             <DensityToggle />
@@ -182,9 +180,8 @@ export default function Inventory() {
               <Select label="Change" value={rule.mode} onChange={(e) => void updatePreview({ ...rule, mode: e.target.value as PriceRule['mode'] })}><option value="percent">By percentage</option><option value="fixed">By fixed amount</option></Select>
               <Field label={rule.mode === 'percent' ? 'Percent (negative = cheaper)' : 'Amount in £ (negative = cheaper)'} type="number" value={rule.amount} onChange={(e) => void updatePreview({ ...rule, amount: Number(e.target.value) })} suffix={rule.mode === 'percent' ? '%' : '£'} />
               <Select label="Brand" value={rule.brand ?? ''} onChange={(e) => void updatePreview({ ...rule, brand: e.target.value || undefined, series: undefined })}><option value="">All brands</option><option>Apple</option><option>Samsung</option></Select>
-              <Select label="Grade" value={rule.condition ?? ''} onChange={(e) => void updatePreview({ ...rule, condition: (e.target.value || undefined) as Condition | undefined })}><option value="">All grades</option>{(['excellent', 'good', 'fair'] as Condition[]).map((c) => <option key={c} value={c}>{CONDITION_LABEL[c]}</option>)}</Select>
-              <Select label="Network" value={rule.network ?? ''} onChange={(e) => void updatePreview({ ...rule, network: e.target.value || undefined })}><option value="">All networks</option>{(settings?.networks ?? []).map((n) => <option key={n}>{n}</option>)}</Select>
-              <Select label="Rounding" value={rule.roundTo === undefined ? '' : String(rule.roundTo)} onChange={(e) => void updatePreview({ ...rule, roundTo: e.target.value === '' ? undefined : Number(e.target.value) })}><option value="">Nearest £1</option><option value="9">End in £9 (£149, £199)</option><option value="5">End in £5</option><option value="0">Nearest £10</option></Select>
+              <Select label="Grade" value={rule.condition ?? ''} onChange={(e) => void updatePreview({ ...rule, condition: (e.target.value || undefined) as Condition | undefined })}><option value="">All grades</option>{CONDITION_ORDER.map((c) => <option key={c} value={c}>{CONDITION_LABEL[c]}</option>)}</Select>
+              <Select label="Rounding" className="sm:col-span-2" value={rule.roundTo === undefined ? '' : String(rule.roundTo)} onChange={(e) => void updatePreview({ ...rule, roundTo: e.target.value === '' ? undefined : Number(e.target.value) })}><option value="">Nearest £1</option><option value="9">End in £9 (£149, £199)</option><option value="5">End in £5</option><option value="0">Nearest £10</option></Select>
             </div>
             <div className="rounded-2xl bg-cream p-4 text-[13px]">
               {preview ? (

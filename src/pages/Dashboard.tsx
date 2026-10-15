@@ -10,7 +10,7 @@ import { Avatar, Delta, ProductThumb, Segmented, Stars } from '../components/ui/
 import { ConditionBadge, OrderStatusBadge } from '../components/ui/Badge';
 import { Skeleton } from '../components/ui/Skeleton';
 import { Donut, HBars, Heatmap, RevenueChart, Sparkline } from '../components/charts/Charts';
-import { conditionLabel, delta, formatDateTime, imageUrl, money, number, ORDER_STATUS_LABEL, timeAgo } from '../lib/format';
+import { CONDITION_ORDER, conditionLabel, delta, formatDateTime, imageUrl, lineSpec, money, number, ORDER_STATUS_LABEL, timeAgo } from '../lib/format';
 import { cn } from '../lib/cn';
 
 function Kpi({ label, value, current, previous, sub, spark, invert, to }: { label: string; value: string; current?: number; previous?: number; sub?: string; spark?: number[]; invert?: boolean; to?: string }) {
@@ -159,8 +159,8 @@ export default function Dashboard() {
           <HBars data={data.salesBySeries.slice(0, 6).map((c) => ({ label: c.key, value: c.revenue, sub: `${c.units} units` }))} format={money} showPct color="#1D5FB4" />
         </Card>
         <Card>
-          <CardHeader title="By network" subtitle="Revenue in range" />
-          <HBars data={data.salesByNetwork.map((c) => ({ label: c.key, value: c.revenue, sub: `${c.units} units` }))} format={money} showPct color="#5B3FA6" />
+          <CardHeader title="By colour" subtitle="Revenue in range" />
+          <HBars data={data.salesByColour.slice(0, 6).map((c) => ({ label: c.key, value: c.revenue, sub: `${c.units} units` }))} format={money} showPct color="#5B3FA6" />
         </Card>
         <Card>
           <CardHeader title="By storage" subtitle="Revenue in range" />
@@ -180,7 +180,7 @@ export default function Dashboard() {
               {data.recentOrders.map((o) => (
                 <tr key={o.orderNumber} className="hover:bg-cream-2">
                   <td className="px-5 py-2"><Link to={`/orders/${o.orderNumber}`} className="font-mono font-semibold hover:underline">{o.orderNumber}</Link><p className="text-[11px] text-ink-3">{timeAgo(o.createdAt)}</p></td>
-                  <td className="px-3 py-2"><span className="flex items-center gap-2"><ProductThumb src={imageUrl(o.lines[0].image)} size="sm" /><span className="min-w-0"><span className="block truncate font-semibold">{o.lines[0].brand} {o.lines[0].name}{o.lines.length > 1 && <span className="text-ink-3"> +{o.lines.length - 1}</span>}</span><span className="block truncate text-[11px] text-ink-3">{o.lines[0].storage} · {o.lines[0].network} · {conditionLabel(o.lines[0].condition)}</span></span></span></td>
+                  <td className="px-3 py-2"><span className="flex items-center gap-2"><ProductThumb src={imageUrl(o.lines[0].image)} size="sm" /><span className="min-w-0"><span className="block truncate font-semibold">{o.lines[0].brand} {o.lines[0].name}{o.lines.length > 1 && <span className="text-ink-3"> +{o.lines.length - 1}</span>}</span><span className="block truncate text-[11px] text-ink-3">{lineSpec(o.lines[0])}</span></span></span></td>
                   <td className="hidden px-3 py-2 md:table-cell"><span className="block truncate font-medium">{o.customer.firstName} {o.customer.lastName}</span><span className="block text-[11px] text-ink-3">{o.customer.city}</span></td>
                   <td className="px-3 py-2"><OrderStatusBadge status={o.status} /></td>
                   <td className="px-5 py-2 text-right font-semibold tabular">{money(o.total)}</td>
@@ -215,11 +215,11 @@ export default function Dashboard() {
           <CardHeader className="px-5 pb-0 pt-5" title="Needs restock" subtitle="Sold in range and now at or below the low-stock line" actions={<Link to="/inventory?stock=low" className="text-[12.5px] font-semibold hover:underline">Inventory</Link>} />
           <ul className="mt-2 divide-y divide-line-2">
             {data.restock.map((r) => (
-              <li key={`${r.productId}${r.storage}${r.network}${r.condition}`} className="flex items-center gap-3 px-5 py-2">
+              <li key={`${r.productId}${r.storage}${r.colour}${r.condition}`} className="flex items-center gap-3 px-5 py-2">
                 <ProductThumb src={imageUrl(r.image)} size="sm" />
                 <span className="min-w-0 flex-1">
                   <span className="block truncate text-[12.5px] font-bold">{r.brand} {r.name}</span>
-                  <span className="flex items-center gap-1.5 text-[11px] text-ink-3">{r.storage} · {r.network} · <ConditionBadge condition={r.condition} /></span>
+                  <span className="flex items-center gap-1.5 text-[11px] text-ink-3">{[r.storage, r.colour].filter(Boolean).join(' · ')} · <ConditionBadge condition={r.condition} /></span>
                 </span>
                 <span className="text-right">
                   <span className={cn('block text-[12.5px] font-bold tabular', r.stock === 0 ? 'text-brand-700' : 'text-warn')}>{r.stock} left</span>
@@ -255,7 +255,7 @@ export default function Dashboard() {
           </Card>
           <Card>
             <CardHeader title="Stock on hand" subtitle={`${number(data.stock.units)} units · ${money(data.stock.value)} at sale price`} />
-            <HBars data={(['excellent', 'good', 'fair'] as const).map((c) => ({ label: conditionLabel(c), value: data.stockByCondition[c].units, sub: money(data.stockByCondition[c].value) }))} format={(n) => `${number(n)} units`} />
+            <HBars data={CONDITION_ORDER.map((c) => ({ label: conditionLabel(c), value: data.stockByCondition[c].units, sub: money(data.stockByCondition[c].value) }))} format={(n) => `${number(n)} units`} />
           </Card>
         </div>
       </div>

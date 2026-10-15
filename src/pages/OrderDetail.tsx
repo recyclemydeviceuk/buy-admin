@@ -14,7 +14,7 @@ import { Modal } from '../components/ui/Modal';
 import { KeyValue, Menu, ProductThumb } from '../components/ui/Misc';
 import { Skeleton } from '../components/ui/Skeleton';
 import { StatusModal, trackingUrl } from '../components/orders/StatusModal';
-import { DELIVERY_LABEL, formatDate, formatDateTime, imageUrl, money, moneyExact, NEXT_STATUSES, ORDER_STATUS_LABEL, STOREFRONT_URL } from '../lib/format';
+import { DELIVERY_LABEL, formatDate, formatDateTime, imageUrl, lineSpec, money, moneyExact, NEXT_STATUSES, ORDER_STATUS_LABEL, STOREFRONT_URL } from '../lib/format';
 import { cn } from '../lib/cn';
 
 const EVENT_ICON = { created: Check, status: Package, note: MessageSquare, payment: CreditCard, email: Mail, tracking: Truck };
@@ -135,7 +135,7 @@ export default function OrderDetail() {
         </div>
         <div className="mt-4 grid grid-cols-2 gap-6 text-sm">
           <div><p className="eyebrow mb-1">Deliver to</p><p className="font-bold">{order.customer.firstName} {order.customer.lastName}</p>{addressLines.map((l) => <p key={l}>{l}</p>)}<p className="mt-1 text-xs text-ink-3">{order.customer.phone}</p></div>
-          <div><p className="eyebrow mb-1">Contents</p><ul className="space-y-1">{order.lines.map((l) => <li key={l.lineId}>{l.quantity} × {l.brand} {l.name} · {l.storage} · {l.network} · {l.condition}</li>)}</ul><p className="mt-2 text-xs text-ink-3">Check IMEI, battery health and grade before sealing.</p></div>
+          <div><p className="eyebrow mb-1">Contents</p><ul className="space-y-1">{order.lines.map((l) => <li key={l.lineId}>{l.quantity} × {l.brand} {l.name} · {lineSpec(l)}</li>)}</ul><p className="mt-2 text-xs text-ink-3">Check IMEI, battery health and grade before sealing.</p></div>
         </div>
       </div>
 
@@ -150,7 +150,7 @@ export default function OrderDetail() {
                   <div className="min-w-0 flex-1">
                     <Link to={`/products/${l.productId}`} className="block truncate text-[15px] font-bold hover:underline">{l.brand} {l.name}</Link>
                     <p className="mt-0.5 flex flex-wrap items-center gap-2 text-[13px] text-ink-3">
-                      <span>{l.storage}</span><span>·</span><span>{l.network}</span><span>·</span><ConditionBadge condition={l.condition} />
+                      <span>{l.storage}</span><span>·</span>{l.colour && <><span>{l.colour}</span><span>·</span></>}<ConditionBadge condition={l.condition} />
                     </p>
                     <a href={`${STOREFRONT_URL}/phones/${l.slug}`} target="_blank" rel="noreferrer" className="mt-1 inline-flex items-center gap-1 text-xs font-semibold text-ink-3 hover:text-ink">View on storefront <ExternalLink size={11} /></a>
                   </div>

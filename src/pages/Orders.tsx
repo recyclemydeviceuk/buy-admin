@@ -92,7 +92,7 @@ export default function Orders() {
   function toCsvRows(items: AdminOrder[]) {
     return items.map((o) => ({
       order: o.orderNumber, placed: o.createdAt, status: o.status, payment: o.paymentStatus, paymentRef: o.paymentRef, customer: `${o.customer.firstName} ${o.customer.lastName}`, email: o.customer.email, phone: o.customer.phone,
-      address: [o.customer.line1, o.customer.line2, o.customer.city, o.customer.postcode].filter(Boolean).join(', '), delivery: o.delivery, items: o.lines.map((l) => `${l.brand} ${l.name} ${l.storage} ${l.network} ${l.condition} x${l.quantity}`).join(' | '),
+      address: [o.customer.line1, o.customer.line2, o.customer.city, o.customer.postcode].filter(Boolean).join(', '), delivery: o.delivery, items: o.lines.map((l) => `${[l.brand, l.name, l.storage, l.colour, l.condition].filter(Boolean).join(' ')} x${l.quantity}`).join(' | '),
       subtotal: o.subtotal, deliveryFee: o.deliveryFee, total: o.total, refunded: o.refundedAmount, tracking: o.tracking ? `${o.tracking.carrier} ${o.tracking.number}` : '', flagged: o.flagged ? 'yes' : '',
     }));
   }
@@ -125,7 +125,7 @@ export default function Orders() {
         <div className="flex -space-x-2">{o.lines.slice(0, 3).map((l) => <ProductThumb key={l.lineId} src={imageUrl(l.image)} size="sm" className="ring-2 ring-white" />)}</div>
         <div className="min-w-0">
           <p className="truncate font-semibold">{o.lines[0].brand} {o.lines[0].name}{o.lines.length > 1 && <span className="text-ink-3"> +{o.lines.length - 1} more</span>}</p>
-          <p className="flex items-center gap-1 truncate text-[11px] text-ink-3"><span className="rounded bg-cream px-1 font-semibold text-ink-2">{o.lines[0].storage}</span>{o.lines[0].network} · {conditionLabel(o.lines[0].condition)}{o.lines.reduce((s, l) => s + l.quantity, 0) > 1 && ` · ${o.lines.reduce((s, l) => s + l.quantity, 0)} units`}</p>
+          <p className="flex items-center gap-1 truncate text-[11px] text-ink-3"><span className="rounded bg-cream px-1 font-semibold text-ink-2">{o.lines[0].storage}</span>{[o.lines[0].colour, conditionLabel(o.lines[0].condition)].filter(Boolean).join(' · ')}{o.lines.reduce((s, l) => s + l.quantity, 0) > 1 && ` · ${o.lines.reduce((s, l) => s + l.quantity, 0)} units`}</p>
         </div>
       </div>
     ) },
